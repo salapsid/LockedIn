@@ -9,7 +9,7 @@ import Foundation
 import FamilyControls
 
 @available(iOS 16.0, *)
-struct Profile: Identifiable, Equatable {
+struct Profile: Identifiable, Equatable, Codable {
     let id: UUID
     var name: String
     var selection: FamilyActivitySelection

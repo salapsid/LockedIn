@@ -21,6 +21,7 @@ final class RestrictionsManager {
         store.shield.webDomains = selection.webDomainTokens.isEmpty ? nil : selection.webDomainTokens
         store.shield.applicationCategories = selection.categoryTokens.isEmpty ? nil : .specific(selection.categoryTokens)
         store.shield.webDomainCategories = selection.categoryTokens.isEmpty ? nil : .specific(selection.categoryTokens)
+        store.application.denyAppRemoval = true
     }
 
     func clear() {
@@ -28,6 +29,7 @@ final class RestrictionsManager {
         store.shield.webDomains = nil
         store.shield.applicationCategories = nil
         store.shield.webDomainCategories = nil
+        store.application.denyAppRemoval = false
     }
 }
 
