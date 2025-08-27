@@ -19,9 +19,10 @@ struct LockedInApp: App {
                     }
                 ProfilesView(viewModel: profilesVM)
                     .tabItem {
-                        Label("profiles", systemImage: "person.3.fill")
+                        Label("Profiles", systemImage: "person.3.fill")
                     }
             }
+            .tint(AppTheme.accentSecondary)
         }
     }
 }

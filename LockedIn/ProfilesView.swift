@@ -13,60 +13,56 @@ struct ProfilesView: View {
     @ObservedObject var viewModel: ProfilesViewModel
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                Color(.sRGB, red: 0.2, green: 0.2, blue: 0.2)
-                    .edgesIgnoringSafeArea(.all)
+        ZStack {
+            AppTheme.backgroundGradient
+                .edgesIgnoringSafeArea(.all)
 
-                Group {
-                    if viewModel.profiles.isEmpty {
-                        ContentUnavailableView("No Profiles", systemImage: "person.3.fill", description: Text("Add a profile to manage selected apps and websites."))
-                            .foregroundColor(.white)
-                    } else {
-                        ScrollView {
-                            LazyVStack(spacing: 16) {
-                                ForEach(viewModel.profiles) { profile in
-                                    ProfileRowView(profile: profile, viewModel: viewModel)
-                                }
-                            }
-                            .padding()
-                        }
-                    }
-                }
-                .navigationTitle("Profiles")
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
+            VStack(alignment: .leading, spacing: 16) {
+                ZStack {
+                    Text("Profiles")
+                        .font(Font(AppTheme.navBarLargeTitleFont))
+                        .foregroundColor(AppTheme.textPrimary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                    HStack {
+                        Spacer()
                         Button {
                             viewModel.beginAdd()
                         } label: {
                             Image(systemName: "plus.circle.fill")
-                                .foregroundColor(.white)
+                                .font(.system(size: 25, weight: .semibold, design: .rounded))
+                                .foregroundColor(AppTheme.textPrimary)
                         }
                         .accessibilityLabel("Add Profile")
                     }
                 }
-                .fullScreenCover(isPresented: $viewModel.isPresentingAddSheet) {
-                    AddProfileSheet(viewModel: viewModel)
+                .padding(.top, 24)
+                .padding(.horizontal)
+
+                if viewModel.profiles.isEmpty {
+                    ContentUnavailableView("No Profiles", systemImage: "person.3.fill", description: Text("Add a profile to manage selected apps and websites."))
+                        .foregroundColor(AppTheme.textPrimary)
+                        .padding(.horizontal)
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 16) {
+                            ForEach(viewModel.profiles) { profile in
+                                ProfileRowView(profile: profile, viewModel: viewModel)
+                            }
+                        }
+                        .padding()
+                    }
                 }
-                .sheet(isPresented: $viewModel.isPresentingEditSheet) {
-                    EditProfileSheet(viewModel: viewModel)
-                }
-            }
-            .task {
-                await viewModel.requestAuthorizationIfNeeded()
             }
         }
-        .navigationViewStyle(StackNavigationViewStyle())
-        .onAppear {
-            let appearance = UINavigationBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
-            appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
-            appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-
-            UINavigationBar.appearance().standardAppearance = appearance
-            UINavigationBar.appearance().scrollEdgeAppearance = appearance
-            UINavigationBar.appearance().tintColor = .white
+        .task {
+            await viewModel.requestAuthorizationIfNeeded()
+        }
+        .fullScreenCover(isPresented: $viewModel.isPresentingAddSheet) {
+            AddProfileSheet(viewModel: viewModel)
+        }
+        .sheet(isPresented: $viewModel.isPresentingEditSheet) {
+            EditProfileSheet(viewModel: viewModel)
         }
     }
 }
@@ -81,23 +77,23 @@ private struct ProfileRowView: View {
             let isLocked = viewModel.lockedProfileId == profile.id
             HStack(spacing: 8) {
                 Text(profile.name)
-                    .font(.headline)
-                    .foregroundColor(.white)
+                    .font(.system(.headline, design: .monospaced))
+                    .foregroundColor(AppTheme.textPrimary)
                 if isLocked {
                     Text("In Use")
                         .font(.caption2)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Color.orange.opacity(0.25))
-                        .foregroundColor(.orange)
+                        .background(AppTheme.accentSecondary.opacity(0.25))
+                        .foregroundColor(AppTheme.accentSecondary)
                         .cornerRadius(6)
                         .accessibilityLabel("Profile in use")
                 }
             }
 
             Text(summary(for: profile))
-                .font(.subheadline)
-                .foregroundColor(.gray)
+                .font(.system(.subheadline, design: .monospaced))
+                .foregroundColor(AppTheme.textMuted)
 
             Button {
                 NFCWriter.shared.beginWrite(profile: profile)
@@ -106,10 +102,10 @@ private struct ProfileRowView: View {
                     Image(systemName: "dot.radiowaves.left.and.right")
                     Text("Scan to NFC")
                 }
-                .foregroundColor(.white)
+                .foregroundColor(AppTheme.textPrimary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(Color.gray.opacity(0.3))
+                .background(AppTheme.accentPrimary.opacity(0.25))
                 .cornerRadius(16)
             }
             .buttonStyle(PlainButtonStyle())
@@ -123,10 +119,10 @@ private struct ProfileRowView: View {
                         Image(systemName: "pencil")
                         Text("Edit")
                     }
-                    .foregroundColor(.white)
+                    .foregroundColor(AppTheme.textPrimary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(Color.gray.opacity(0.25))
+                    .background(AppTheme.accentSecondary.opacity(0.20))
                     .cornerRadius(12)
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -139,10 +135,10 @@ private struct ProfileRowView: View {
                         Image(systemName: "trash")
                         Text("Delete")
                     }
-                    .foregroundColor(.red)
+                    .foregroundColor(AppTheme.danger)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(Color.red.opacity(0.15))
+                    .background(AppTheme.danger.opacity(0.15))
                     .cornerRadius(12)
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -151,9 +147,9 @@ private struct ProfileRowView: View {
             }
         }
         .padding()
-        .background(Color(.sRGB, red: 0.25, green: 0.25, blue: 0.25))
+        .background(AppTheme.surface)
         .cornerRadius(12)
-        .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 5)
+        .shadow(color: AppTheme.subtleShadow, radius: 10, x: 0, y: 10)
         .contextMenu {
             Button(role: .destructive) {
                 if let index = viewModel.profiles.firstIndex(where: { $0.id == profile.id }) {
@@ -190,41 +186,50 @@ private struct AddProfileSheet: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Name")
                         .font(.footnote)
-                        .foregroundColor(.gray)
+                        .foregroundColor(AppTheme.textMuted)
                     TextField("Focus name", text: $viewModel.newProfileName)
                         .textInputAutocapitalization(.words)
-                        .foregroundColor(.white)
+                        .foregroundColor(AppTheme.textPrimary)
                         .padding(12)
-                        .background(Color(.sRGB, red: 0.25, green: 0.25, blue: 0.25))
+                        .background(AppTheme.surfaceElevated)
                         .cornerRadius(10)
                 }
                 .padding()
 
-                Divider().background(Color.black)
+                Divider().background(AppTheme.surfaceElevated)
 
                 FamilyActivityPicker(selection: $viewModel.newSelection)
             }
-            .background(Color(.sRGB, red: 0.2, green: 0.2, blue: 0.2))
+            .background(AppTheme.backgroundGradient)
+            .tint(AppTheme.accentSecondary)
+            .preferredColorScheme(.dark)
             .navigationTitle("New Profile")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { viewModel.isPresentingAddSheet = false }
-                        .foregroundColor(.white)
+                        .foregroundColor(AppTheme.textPrimary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { viewModel.saveNewProfile() }
                         .disabled(viewModel.newProfileName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                        .foregroundColor(viewModel.newProfileName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .gray : .white)
+                        .foregroundColor(viewModel.newProfileName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? AppTheme.textMuted : AppTheme.textPrimary)
                 }
             }
             .onAppear {
                 let appearance = UINavigationBarAppearance()
                 appearance.configureWithOpaqueBackground()
-                appearance.backgroundColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
-                appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+                appearance.backgroundColor = AppTheme.navBarBackgroundUIColor
+                appearance.titleTextAttributes = [
+                    .foregroundColor: AppTheme.navBarTitleUIColor,
+                    .font: AppTheme.navBarTitleFont
+                ]
+                appearance.largeTitleTextAttributes = [
+                    .foregroundColor: AppTheme.navBarTitleUIColor,
+                    .font: AppTheme.navBarLargeTitleFont
+                ]
                 UINavigationBar.appearance().standardAppearance = appearance
                 UINavigationBar.appearance().scrollEdgeAppearance = appearance
-                UINavigationBar.appearance().tintColor = .white
+                UINavigationBar.appearance().tintColor = AppTheme.tintUIColor
             }
         }
     }
@@ -237,39 +242,48 @@ private struct EditProfileSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("Name").foregroundColor(.gray)) {
+                Section(header: Text("Name").foregroundColor(AppTheme.textMuted)) {
                     TextField("Focus name", text: $viewModel.editProfileName)
                         .textInputAutocapitalization(.words)
-                        .foregroundColor(.white)
+                        .foregroundColor(AppTheme.textPrimary)
                 }
 
-                Section(header: Text("Choose apps and websites").foregroundColor(.gray)) {
+                Section(header: Text("Choose apps and websites").foregroundColor(AppTheme.textMuted)) {
                     FamilyActivityPicker(selection: $viewModel.editSelection)
                         .frame(minHeight: 360)
                 }
             }
             .scrollContentBackground(.hidden)
-            .background(Color(.sRGB, red: 0.2, green: 0.2, blue: 0.2))
+            .background(AppTheme.backgroundGradient)
+            .tint(AppTheme.accentSecondary)
+            .preferredColorScheme(.dark)
             .navigationTitle("Edit Profile")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { viewModel.isPresentingEditSheet = false }
-                        .foregroundColor(.white)
+                        .foregroundColor(AppTheme.textPrimary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { viewModel.saveEditedProfile() }
                         .disabled(viewModel.editProfileName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || (viewModel.editProfileId != nil && viewModel.lockedProfileId == viewModel.editProfileId))
-                        .foregroundColor((viewModel.editProfileName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || (viewModel.editProfileId != nil && viewModel.lockedProfileId == viewModel.editProfileId)) ? .gray : .white)
+                        .foregroundColor((viewModel.editProfileName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || (viewModel.editProfileId != nil && viewModel.lockedProfileId == viewModel.editProfileId)) ? AppTheme.textMuted : AppTheme.textPrimary)
                 }
             }
             .onAppear {
                 let appearance = UINavigationBarAppearance()
                 appearance.configureWithOpaqueBackground()
-                appearance.backgroundColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
-                appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+                appearance.backgroundColor = AppTheme.navBarBackgroundUIColor
+                appearance.titleTextAttributes = [
+                    .foregroundColor: AppTheme.navBarTitleUIColor,
+                    .font: AppTheme.navBarTitleFont
+                ]
+                appearance.largeTitleTextAttributes = [
+                    .foregroundColor: AppTheme.navBarTitleUIColor,
+                    .font: AppTheme.navBarLargeTitleFont
+                ]
                 UINavigationBar.appearance().standardAppearance = appearance
                 UINavigationBar.appearance().scrollEdgeAppearance = appearance
-                UINavigationBar.appearance().tintColor = .white
+                UINavigationBar.appearance().tintColor = AppTheme.tintUIColor
             }
         }
     }
